@@ -1,0 +1,171 @@
+// import React, { useEffect, useState } from "react";
+// import { Link, useNavigate, useParams } from "react-router-dom";
+// import appwriteService from "../appwrite/config";
+// import { Button, Container } from "../components/index";
+// // import parse from "html-react-parser";
+// import { useSelector } from "react-redux";
+
+// export default function Note() {
+//     const [note, setNote] = useState(null);
+//     const { slug } = useParams();
+//     const navigate = useNavigate();
+
+//     const userData = useSelector((state) => state.auth.userData);
+
+//     const isAuthor = note && userData ? note.userId === userData.$id : false;
+
+//     useEffect(() => {
+//         if (slug) {
+//             appwriteService.getNote(slug).then((note) => {
+//                 if (note) setNote(note);
+//                 else navigate("/");
+//             });
+//         } else navigate("/");
+//     }, [slug, navigate]);
+
+//     const deleteNote = () => {
+//         appwriteService.deleteNote(note.$id).then((status) => {
+//             if (status) {
+//                 appwriteService.deleteFile(note.coverImageId);
+//                 appwriteService.deleteFile(note.pdfId);
+//                 navigate("/");
+//             }
+//         });
+//     };
+
+//     return note ? (
+//         <div className="py-8">
+//             <Container>
+//                 <div className="w-full justify-center mb-4 relative border rounded-xl p-2">
+//                     <div>{note.title}</div>
+//                     <div>By {note.userName}</div>
+//                     <div>Created at {note.$createdAt}</div>
+//                     <div>Updated at {note.$updatedAt}</div>
+//                     <div>{note.description}</div>
+//                     <div>{note.pricing}</div>
+//                     {
+//                         note.pricing==="Paid"?(
+//                             <div>Rs. {note.price}</div>
+//                         ):null
+//                     }
+//                     <img src={appwriteService.getFileView(note.coverImageId)}></img>
+//                     <Button onClick={()=>{
+//                             const fileUrl = appwriteService.downloadFile(note.pdfId);
+//                             window.open(fileUrl, "_blank")
+//                         }
+//                     }>
+//                             Download File
+//                     </Button>
+                    
+//                 </div>
+//             </Container>
+//         </div>
+//     ) : null;
+// }
+
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import appwriteService from "../appwrite/config";
+import { Button, Container } from "../components/index";
+import { useSelector } from "react-redux";
+
+export default function Note() {
+    const [note, setNote] = useState(null);
+    const { slug } = useParams();
+    const navigate = useNavigate();
+
+    const userData = useSelector((state) => state.auth.userData);
+    const isAuthor = note && userData ? note.userId === userData.$id : false;
+
+    useEffect(() => {
+        if (slug) {
+            appwriteService.getNote(slug).then((note) => {
+                if (note) setNote(note);
+                else navigate("/");
+            });
+        } else {
+            navigate("/");
+        }
+    }, [slug, navigate]);
+
+    const deleteNote = () => {
+        appwriteService.deleteNote(note.$id).then((status) => {
+            if (status) {
+                appwriteService.deleteFile(note.coverImageId);
+                appwriteService.deleteFile(note.pdfId);
+                navigate("/");
+            }
+        });
+    };
+
+    return note ? (
+        <div className="py-10">
+            <Container>
+                <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
+                    
+                    {/* Title and Author */}
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800 mb-1">{note.title}</h1>
+                        <p className="text-sm text-gray-500">
+                            By <span className="font-medium">{note.userName}</span>
+                        </p>
+                    </div>
+
+                    {/* Timestamps */}
+                    <div className="text-sm text-gray-400 space-y-1">
+                        <p>Created: {new Date(note.$createdAt).toLocaleString()}</p>
+                        <p>Updated: {new Date(note.$updatedAt).toLocaleString()}</p>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <h2 className="text-xl font-semibold mb-2">Description</h2>
+                        <p className="text-gray-700">{note.description}</p>
+                    </div>
+
+                    {/* Pricing */}
+                    <div>
+                        <h2 className="text-xl font-semibold mb-2">Pricing</h2>
+                        <p className="text-gray-700">
+                            {note.pricing === "Free" ? "Free" : `Paid - ₹${note.price}`}
+                        </p>
+                    </div>
+
+                    {/* Cover Image */}
+                    <div>
+                        <h2 className="text-xl font-semibold mb-2">Cover Image</h2>
+                        <img
+                            src={appwriteService.getFileView(note.coverImageId)}
+                            alt="Cover"
+                            className="w-full max-h-96 object-contain rounded-lg border"
+                        />
+                    </div>
+
+                    {/* Download Button */}
+                    <div className="flex gap-4 flex-wrap">
+                        <Button
+                            onClick={() => {
+                                const fileUrl = appwriteService.downloadFile(note.pdfId);
+                                appwriteService.createDownloadInfo({noteId: note.$id, userId: userData.$id})
+                                window.open(fileUrl, "_blank");
+                            }}
+                        >
+                            Download PDF
+                        </Button>
+
+                        {isAuthor && (
+                            <>
+                                <Link to={`/edit-note/${note.$id}`}>
+                                    <Button bgColor="bg-yellow-500">Edit</Button>
+                                </Link>
+                                <Button bgColor="bg-red-500" onClick={deleteNote}>
+                                    Delete
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </Container>
+        </div>
+    ) : null;
+}
