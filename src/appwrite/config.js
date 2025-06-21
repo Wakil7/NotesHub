@@ -15,12 +15,12 @@ export class Service{
 
     // Notes Service
 
-    async createNote({title, slug, description, coverImageId, pdfId, pricing, price, userId, keywords, userName}){
+    async createNote({title, description, coverImageId, pdfId, pricing, price, userId, keywords, userName}){
         try{
             return await this.databases.createDocument(
                 conf.appwriteDatabaseId, 
                 conf.appwriteNotesCollectionId, 
-                slug,
+                ID.unique(),
                 {
                     title,
                     description,
@@ -248,6 +248,99 @@ export class Service{
                 query2
             )
             
+        }
+        catch(error){
+            console.log(error)
+            return null;
+        }
+    }
+
+    // Reviews service
+
+    async createReview({noteId, userId, userName, rating, comment}){
+        try{
+            return await this.databases.createDocument(
+                conf.appwriteDatabaseId, 
+                conf.appwriteReviewsCollectionId, 
+                ID.unique(),
+                {
+                    noteId,
+                    userId,
+                    userName,
+                    rating,
+                    comment
+                }
+
+            )
+        }
+        catch(error){
+            console.log("Appwrite service :: createPost :: error", error);
+        }
+    }
+
+    async updateReview(reviewId, {noteId, userId, userName, rating, comment}){
+        try{
+            return await this.databases.updateDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteReviewsCollectionId,
+                reviewId,
+                {
+                    noteId,
+                    userId,
+                    userName,
+                    rating,
+                    comment
+                }
+            )
+        }
+        catch(error){
+            console.log("Appwrite service :: updatePost :: error", error);
+        }
+    }
+
+    async deleteReview(reviewId){
+        try{
+            await this.databases.deleteDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteReviewsCollectionId,
+                reviewId
+            )
+            return true;
+        }
+        catch(error){
+            console.log("Appwrite service :: deletePost :: error", error);
+            return false;
+        }
+    }
+
+    async getAverageRating(noteId){
+        try{
+            const query = [Query.equal("noteId", noteId)]
+            let res = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteReviewsCollectionId,
+                query
+            )
+            let rating = 0;
+            Array.from(res.documents).forEach((obj)=>rating += obj.rating)
+            return rating/res.documents.length;
+            
+        }
+        catch(error){
+            console.log(error)
+            return 0;
+        }
+    }
+
+
+    async getReviews(noteId){
+        try{
+            const query = [Query.equal("noteId", noteId)]
+            return this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteReviewsCollectionId,
+                query
+            )
         }
         catch(error){
             console.log(error)

@@ -12,6 +12,7 @@ import Button from './Button'
 import Input from './Input'
 import Select from './Select'
 import TextArea from './TextArea'
+import Reviews from './Reviews'
 
 
-export {Header, Footer, Container, Logo, LogoutBtn, Signup, Login, NoteForm, AuthLayout, Button, Input, NoteCard, Select, TextArea}
+export {Header, Footer, Container, Logo, LogoutBtn, Signup, Login, NoteForm, AuthLayout, Button, Input, NoteCard, Select, TextArea, Reviews}

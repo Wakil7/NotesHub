@@ -66,16 +66,46 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
-import { Button, Container } from "../components/index";
+import { Button, Container, Reviews} from "../components/index";
 import { useSelector } from "react-redux";
 
 export default function Note() {
     const [note, setNote] = useState(null);
+    // const [reviews, setReviews] = useState([]);
     const { slug } = useParams();
     const navigate = useNavigate();
 
     const userData = useSelector((state) => state.auth.userData);
     const isAuthor = note && userData ? note.userId === userData.$id : false;
+
+    const [rating, setRating] = useState(0);
+
+    
+
+    // const { register, handleSubmit } = useForm()
+
+    // const submitReview = async(data) =>{
+    //     data.rating = Number.parseInt(data.rating);
+
+    //     // if (review){
+
+    //     //     const dbNote = await appwriteService.updateReview(review.$id,
+    //     //          {
+    //     //             ...data,
+    //     //          }
+    //     //         );
+
+    //     // }
+    //     // else{
+    //         appwriteService.createReview({
+    //             ...data,
+    //             noteId: note.$id,
+    //             userId: userData.$id,
+    //             userName: userData.name,
+    //         });
+
+    //     // }
+    // }
 
     useEffect(() => {
         if (slug) {
@@ -87,6 +117,24 @@ export default function Note() {
             navigate("/");
         }
     }, [slug, navigate]);
+
+    useEffect(() => {
+        if (note) {
+            appwriteService.getAverageRating(note.$id).then((value)=>setRating(value.toFixed(1)));
+        }
+    }, [note]);
+
+    // useEffect(()=>{
+    //     if (slug){
+    //         appwriteService.getReviews(slug).then((value)=>{
+    //             if (reviews) setReviews(Array.from(value.documents))
+    //         });
+    //     }
+    // }, [submitReview])
+
+
+
+    
 
     const deleteNote = () => {
         appwriteService.deleteNote(note.$id).then((status) => {
@@ -103,11 +151,14 @@ export default function Note() {
             <Container>
                 <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
                     
-                    {/* Title and Author */}
+                    {/* Title and Author and Rating */}
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800 mb-1">{note.title}</h1>
                         <p className="text-sm text-gray-500">
                             By <span className="font-medium">{note.userName}</span>
+                        </p>
+                        <p className="text-sm text-gray-500">
+                            Rating <span className="font-medium">{rating}</span>
                         </p>
                     </div>
 
@@ -164,6 +215,44 @@ export default function Note() {
                             </>
                         )}
                     </div>
+
+                    <Reviews slug={slug} noteId={note.$id} userId={userData.$id} userName={userData.name}/>
+
+                    {/* <div>
+                        <form onSubmit={handleSubmit(submitReview)}>
+                            <div className="px-2">
+                                
+                                <TextArea label="Comment :"
+                                placeholder="Write your comment here..."
+                                rows={2}
+                                className="mb-4"
+                                {...register("comment", {required: true})}
+                                />
+
+                                <Input
+                                    label="Rating :"
+                                    placeholder="rating"
+                                    className="mb-4"
+                                    {...register("rating", { required: true })}
+                                />
+                                <Button type="submit" className="w-full">
+                                    {}Submit
+                                </Button>
+
+                            </div>
+                        </form>
+                        {reviews && (
+                            reviews.map((review)=>(
+                                <div key={review.$id}>
+                                    <div>{review.userName}</div>
+                                    <div>{review.comment}</div>
+                                    <div>{review.rating}</div>
+                                </div>
+                            ))
+                        )}
+                    </div> */}
+
+
                 </div>
             </Container>
         </div>
