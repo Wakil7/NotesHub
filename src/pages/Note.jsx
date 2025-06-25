@@ -258,3 +258,5 @@ export default function Note() {
         </div>
     ) : null;
 }
+
+// 7->2nd, 8->2nd, 9->Full, 11->Full, 12->Full, 13->Full

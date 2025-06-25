@@ -44,11 +44,16 @@ function Header(){
             name: "Downloads",
             slug: "/downloads",
             active: authStatus
+        },
+        {
+            name: "Dashboard",
+            slug: "/dashboard",
+            active: authStatus
         }
     ]
 
     return (
-        <header className="py-3 shadow bg-gray-500">
+        <header className="fixed top-0 w-full z-50 py-3 shadow bg-gray-500">
             <Container>
                 <nav className="flex">
                     <div className="mr-4">

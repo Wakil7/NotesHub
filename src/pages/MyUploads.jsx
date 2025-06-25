@@ -3,12 +3,12 @@ import appwriteService from '../appwrite/config'
 import {NoteCard, Container} from '../components/index'
 import { useSelector } from 'react-redux'
 
-function Downloads(){
+function MyUploads(){
     const [notes, setNotes] = useState([])
     const userData = useSelector((state) => state.auth.userData);
 
     useEffect(()=>{
-        appwriteService.getUserDownloadedNotes(userData.$id).then((notes)=>{
+        appwriteService.getNotesByUser(userData.$id).then((notes)=>{
             if (notes){
                 // console.log(notes)
                 setNotes(notes.documents)
@@ -38,4 +38,4 @@ function Downloads(){
     )
 }
 
-export default Downloads
+export default MyUploads
