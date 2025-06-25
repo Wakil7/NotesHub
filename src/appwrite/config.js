@@ -348,6 +348,44 @@ export class Service{
         }
     }
 
+    // Transaction Service
+
+    async createTransactionInfo(transactionId, {noteId, userId}){
+        try{
+            return await this.databases.createDocument(
+                conf.appwriteDatabaseId, 
+                conf.appwriteTransactionsCollectionId, 
+                transactionId,
+                {
+                    noteId,
+                    userId
+                }
+            )
+        }
+        catch(error){
+            console.log("Appwrite service :: createPost :: error", error);
+        }
+    }
+
+    async getTransactionInfo({noteId, userId}){
+        try{
+            const queries = [Query.equal("userId", userId), Query.equal("noteId", noteId)]
+            let res = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteTransactionsCollectionId,
+                queries
+            )
+            return Array.from(res.documents)[0];
+        }
+        catch(error){
+            console.log(error)
+            return null;
+        }
+    }
+
+
+
+
     // File service
 
     async uploadFile(file){

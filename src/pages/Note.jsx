@@ -68,6 +68,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import { Button, Container, Reviews} from "../components/index";
 import { useSelector } from "react-redux";
+import { ID } from 'appwrite'
 
 export default function Note() {
     const [note, setNote] = useState(null);
@@ -196,6 +197,7 @@ export default function Note() {
                     <div className="flex gap-4 flex-wrap">
                         <Button
                             onClick={() => {
+                                appwriteService.createTransactionInfo(ID.unique(), {noteId: note.$id, userId: userData.$id})
                                 const fileUrl = appwriteService.downloadFile(note.pdfId);
                                 appwriteService.createDownloadInfo({noteId: note.$id, userId: userData.$id})
                                 window.open(fileUrl, "_blank");

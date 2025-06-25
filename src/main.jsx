@@ -26,7 +26,7 @@ import EditNote from "./pages/EditNote";
 import Note from "./pages/Note";
 import AllNotes from "./pages/AllNotes";
 import MyNotes from "./pages/MyUploads.jsx";
-import Downloads from "./pages/MyDownloads";
+// import Downloads from "./pages/MyDownloads";
 import Dashboard from "./pages/Dashboard";
 
 
@@ -82,15 +82,15 @@ const router = createBrowserRouter([
                 </AuthLayout>
             )
         },
-        {
-            path: "/my-downloads",
-            element: (
-                <AuthLayout authentication>
-                    {" "}
-                    <Downloads />
-                </AuthLayout>
-            )
-        },
+        // {
+        //     path: "/my-downloads",
+        //     element: (
+        //         <AuthLayout authentication>
+        //             {" "}
+        //             <Downloads />
+        //         </AuthLayout>
+        //     )
+        // },
         {
             path: "/edit-note/:slug",
             element: (

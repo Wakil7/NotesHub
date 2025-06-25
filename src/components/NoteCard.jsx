@@ -29,13 +29,13 @@ function NoteCard({ $id, title, coverImageId, pricing, price, userName }) {
     return (
         <Link to={`/note/${$id}`}>
             <div className="w-full bg-gray-100 rounded-xl p-4 shadow hover:shadow-md transition duration-300">
-                
+
                 {/* Cover Image */}
-                <div className="w-full flex justify-center mb-4">
+                <div className="w-48 aspect-[16/9] rounded-lg overflow-hidden border bg-gray-100">
                     <img
                         src={appwriteService.getFileView(coverImageId)}
-                        alt={title}
-                        className="rounded-xl max-h-48 object-contain"
+                        alt="Cover"
+                        className="w-full h-full object-cover"
                     />
                 </div>
 

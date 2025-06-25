@@ -37,7 +37,7 @@
 import {
   FilePlus,
   UploadCloud,
-  DownloadCloud,
+  Receipt,
   BarChart2,
   CreditCard,
 } from 'lucide-react';
@@ -46,7 +46,7 @@ export default function Sidebar({ onSelectPage }) {
   const navItems = [
     { id: 'add-note', label: 'Add Note', icon: <FilePlus size={20} /> },
     { id: 'my-uploads', label: 'My Uploads', icon: <UploadCloud size={20} /> },
-    { id: 'my-downloads', label: 'My Downloads', icon: <DownloadCloud size={20} /> },
+    { id: 'purchase-history', label: 'Purchase History', icon: <Receipt size={20} /> },
     { id: 'statistics', label: 'Statistics', icon: <BarChart2 size={20} /> },
     { id: 'payments', label: 'Payments', icon: <CreditCard size={20} /> },
   ];

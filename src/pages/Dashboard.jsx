@@ -28,7 +28,7 @@ import { useState } from 'react';
 import Sidebar from '../components/sidebar/Sidebar';
 import AddNote from './AddNote';
 import MyUploads from './MyUploads';
-import MyDownloads from './MyDownloads';
+import PurchaseHistory from './PurchaseHistory';
 import Statistics from './Statistics';
 import Payments from './Payments';
 
@@ -41,8 +41,8 @@ export default function Dashboard() {
         return <AddNote />;
       case 'my-uploads':
         return <MyUploads />;
-      case 'my-downloads':
-        return <MyDownloads />;
+      case 'purchase-history':
+        return <PurchaseHistory />;
       case 'statistics':
         return <Statistics />;
       case 'payments':

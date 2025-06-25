@@ -1,14 +1,14 @@
 import React, {useState, useEffect} from 'react'
 import appwriteService from '../appwrite/config'
-import {NoteInfo, Container} from '../components/index'
+import {PurchaseInfo, Container} from '../components/index'
 import { useSelector } from 'react-redux'
 
-function MyUploads(){
+function PurchaseHistory(){
     const [notes, setNotes] = useState([])
     const userData = useSelector((state) => state.auth.userData);
 
     useEffect(()=>{
-        appwriteService.getNotesByUser(userData.$id).then((notes)=>{
+        appwriteService.getUserDownloadedNotes(userData.$id).then((notes)=>{
             if (notes){
                 // console.log(notes)
                 setNotes(notes.documents)
@@ -21,14 +21,15 @@ function MyUploads(){
                 <div className='flex flex-wrap'>
                     {notes.map((note)=>(
                         <div key={note.$id} className='p-2 w-full'>
-                            <NoteInfo 
+                            <PurchaseInfo 
                                 $id={note.$id}
                                 title={note.title}
                                 coverImageId={note.coverImageId}
                                 pricing={note.pricing}
                                 price={note.price}
-                                uploadDate={note.$createdAt}
-                                updateDate={note.$updatedAt}
+                                pdfId={note.pdfId}
+                                uploaderName={note.userName}
+                                userId={note.userId}
                             />
                         </div>
                     ))}
@@ -38,4 +39,4 @@ function MyUploads(){
     )
 }
 
-export default MyUploads
+export default PurchaseHistory
