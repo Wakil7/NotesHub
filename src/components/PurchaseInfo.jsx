@@ -8,7 +8,6 @@ export default function PurchaseInfo({
     $id,
     title,
     coverImageId,
-    userId,
     uploaderName,
     // purchaseDate,
     pricing,
@@ -18,7 +17,7 @@ export default function PurchaseInfo({
 }) {
 
     const userData = useSelector((state) => state.auth.userData);
-    const [transaction, setTransaction] = useState({})
+    const [transaction, setTransaction] = useState(null)
 
     const downloadNote = ($id, pdfId) => {
         const fileUrl = appwriteService.downloadFile(pdfId);
@@ -27,7 +26,7 @@ export default function PurchaseInfo({
     }
     
     useEffect(()=>{
-        (async()=>{let transactionInfo = await appwriteService.getTransactionInfo({noteId: $id, userId});
+        (async()=>{let transactionInfo = await appwriteService.getTransactionInfo({noteId: $id, purchaseUserId: userData.$id});
         console.log(transactionInfo);
         setTransaction(transactionInfo);
     })();
@@ -42,7 +41,7 @@ export default function PurchaseInfo({
             
 
                 {/* Cover Image */}
-                <div className="w-48 aspect-[4/3] rounded-lg overflow-hidden border bg-gray-100">
+                <div className="w-48 aspect-[16/9] rounded-lg overflow-hidden border bg-gray-100">
                     <img
                         src={appwriteService.getFileView(coverImageId)}
                         alt="Cover"
@@ -58,13 +57,13 @@ export default function PurchaseInfo({
                             Uploaded by: <span className="text-gray-800 font-medium">{uploaderName}</span>
                         </p>
                         <p>
-                            Purchased on: <span className="text-gray-800 font-medium">{new Date(transaction.$createdAt).toLocaleString()}</span>
+                            Purchased on: <span className="text-gray-800 font-medium">{transaction==null?"":new Date(transaction.$createdAt).toLocaleString()}</span>
                         </p>
                         <p>
                             Price: <span className="text-gray-800">{pricing === 'Free' ? 'Free' : `₹${price}`}</span>
                         </p>
                         <p className="flex items-center gap-2">
-                            <Receipt size={16} /> <span className="font-mono text-gray-700">Transaction Id: {transaction.$id}</span>
+                            <Receipt size={16} /> <span className="font-mono text-gray-700">Transaction Id: {transaction==null?"":transaction.$id}</span>
                         </p>
                     </div>
                     

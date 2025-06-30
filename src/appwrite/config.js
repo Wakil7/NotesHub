@@ -350,7 +350,7 @@ export class Service{
 
     // Transaction Service
 
-    async createTransactionInfo(transactionId, {noteId, userId}){
+    async createTransactionInfo(transactionId, {noteId, noteUserId, purchaseUserId, amount}){
         try{
             return await this.databases.createDocument(
                 conf.appwriteDatabaseId, 
@@ -358,7 +358,9 @@ export class Service{
                 transactionId,
                 {
                     noteId,
-                    userId
+                    noteUserId,
+                    purchaseUserId,
+                    amount
                 }
             )
         }
@@ -367,15 +369,31 @@ export class Service{
         }
     }
 
-    async getTransactionInfo({noteId, userId}){
+    async getTransactionInfo({noteId, purchaseUserId}){
         try{
-            const queries = [Query.equal("userId", userId), Query.equal("noteId", noteId)]
+            const queries = [Query.equal("purchaseUserId", purchaseUserId), Query.equal("noteId", noteId)]
             let res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteTransactionsCollectionId,
                 queries
             )
             return Array.from(res.documents)[0];
+        }
+        catch(error){
+            console.log(error)
+            return null;
+        }
+    }
+
+    async getPaymentTransactionInfo(noteUserId){
+        try{
+            const query = [Query.equal("noteUserId", noteUserId)]
+            let res = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteTransactionsCollectionId,
+                query
+            )
+            return res.documents;
         }
         catch(error){
             console.log(error)

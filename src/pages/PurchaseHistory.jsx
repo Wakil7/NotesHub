@@ -29,7 +29,6 @@ function PurchaseHistory(){
                                 price={note.price}
                                 pdfId={note.pdfId}
                                 uploaderName={note.userName}
-                                userId={note.userId}
                             />
                         </div>
                     ))}

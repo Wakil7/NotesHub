@@ -197,7 +197,7 @@ export default function Note() {
                     <div className="flex gap-4 flex-wrap">
                         <Button
                             onClick={() => {
-                                appwriteService.createTransactionInfo(ID.unique(), {noteId: note.$id, userId: userData.$id})
+                                appwriteService.createTransactionInfo(ID.unique(), {noteId: note.$id, noteUserId: note.userId, purchaseUserId: userData.$id, amount: note.price })
                                 const fileUrl = appwriteService.downloadFile(note.pdfId);
                                 appwriteService.createDownloadInfo({noteId: note.$id, userId: userData.$id})
                                 window.open(fileUrl, "_blank");
