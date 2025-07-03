@@ -1,78 +1,14 @@
-// import React, { useEffect, useState } from "react";
-// import { Link, useNavigate, useParams } from "react-router-dom";
-// import appwriteService from "../appwrite/config";
-// import { Button, Container } from "../components/index";
-// // import parse from "html-react-parser";
-// import { useSelector } from "react-redux";
-
-// export default function Note() {
-//     const [note, setNote] = useState(null);
-//     const { slug } = useParams();
-//     const navigate = useNavigate();
-
-//     const userData = useSelector((state) => state.auth.userData);
-
-//     const isAuthor = note && userData ? note.userId === userData.$id : false;
-
-//     useEffect(() => {
-//         if (slug) {
-//             appwriteService.getNote(slug).then((note) => {
-//                 if (note) setNote(note);
-//                 else navigate("/");
-//             });
-//         } else navigate("/");
-//     }, [slug, navigate]);
-
-//     const deleteNote = () => {
-//         appwriteService.deleteNote(note.$id).then((status) => {
-//             if (status) {
-//                 appwriteService.deleteFile(note.coverImageId);
-//                 appwriteService.deleteFile(note.pdfId);
-//                 navigate("/");
-//             }
-//         });
-//     };
-
-//     return note ? (
-//         <div className="py-8">
-//             <Container>
-//                 <div className="w-full justify-center mb-4 relative border rounded-xl p-2">
-//                     <div>{note.title}</div>
-//                     <div>By {note.userName}</div>
-//                     <div>Created at {note.$createdAt}</div>
-//                     <div>Updated at {note.$updatedAt}</div>
-//                     <div>{note.description}</div>
-//                     <div>{note.pricing}</div>
-//                     {
-//                         note.pricing==="Paid"?(
-//                             <div>Rs. {note.price}</div>
-//                         ):null
-//                     }
-//                     <img src={appwriteService.getFileView(note.coverImageId)}></img>
-//                     <Button onClick={()=>{
-//                             const fileUrl = appwriteService.downloadFile(note.pdfId);
-//                             window.open(fileUrl, "_blank")
-//                         }
-//                     }>
-//                             Download File
-//                     </Button>
-                    
-//                 </div>
-//             </Container>
-//         </div>
-//     ) : null;
-// }
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
-import { Button, Container, Reviews} from "../components/index";
+import { Button, Container, Reviews } from "../components/index";
 import { useSelector } from "react-redux";
 import { ID } from 'appwrite'
+import conf from '../../backend/conf/conf';
+import axios from 'axios';
 
 export default function Note() {
     const [note, setNote] = useState(null);
-    // const [reviews, setReviews] = useState([]);
     const { slug } = useParams();
     const navigate = useNavigate();
 
@@ -81,32 +17,97 @@ export default function Note() {
 
     const [rating, setRating] = useState(0);
 
-    
+    const [responseState, setResponseState] = useState([]);
+    const [paymentId, setPaymentId] = useState(null);
+    const [isPaid, setIsPaid] = useState(false);
 
-    // const { register, handleSubmit } = useForm()
+    const loadScript = (src) => {
+        return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = src;
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
 
-    // const submitReview = async(data) =>{
-    //     data.rating = Number.parseInt(data.rating);
+    const createRazorpayOrder = (amount) => {
+        const data = JSON.stringify({
+            amount: amount,
+            currency: "INR"
+        });
 
-    //     // if (review){
+        const config = {
+            method: "post",
+            maxBodyLength: Infinity,
+            url: "http://localhost:5000/orders",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            data: data
+        };
 
-    //     //     const dbNote = await appwriteService.updateReview(review.$id,
-    //     //          {
-    //     //             ...data,
-    //     //          }
-    //     //         );
+        axios.request(config)
+            .then((response) => {
+                console.log("🧾 Order created:", response.data);
+                handleRazorpayScreen(response.data); // ✅ pass full order
+            })
+            .catch((error) => {
+                console.error("❌ Error creating order:", error);
+            });
+    };
 
-    //     // }
-    //     // else{
-    //         appwriteService.createReview({
-    //             ...data,
-    //             noteId: note.$id,
-    //             userId: userData.$id,
-    //             userName: userData.name,
-    //         });
+    const handleRazorpayScreen = async (orderData) => {
+        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+        if (!res) {
+            console.error("❌ Razorpay SDK failed to load");
+            return;
+        }
 
-    //     // }
-    // }
+        const options = {
+            key: conf.razorpayKeyId,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: "Note Name",
+            description: "Payment for note",
+            order_id: orderData.order_id,
+            handler: function (response) {
+                console.log("✅ Payment success:", response);
+                appwriteService.createTransactionInfo(response.razorpay_payment_id, {
+                    noteId: note.$id,
+                    noteUserId: note.userId,
+                    purchaseUserId: userData.$id,
+                    amount: note.price
+                })
+                setPaymentId(response.razorpay_payment_id);
+                setIsPaid(true);
+            },
+            prefill: {
+                name: "Wakil",
+                email: "test@gmail.com"
+            },
+            theme: {
+                color: "blue"
+            }
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+    };
+
+
+    const paymentFetch = (e) => {
+        e.preventDefault();
+        const paymentId = e.target.paymentId.value;
+        axios.get(`http://localhost:5000/payment/${paymentId}`)
+            .then((response) => {
+                console.log("✅ Payment fetched:", response.data);
+                setResponseState(response.data);
+            })
+            .catch((error) => {
+                console.error("❌ Payment fetch failed:", error);
+            });
+    };
 
     useEffect(() => {
         if (slug) {
@@ -121,21 +122,27 @@ export default function Note() {
 
     useEffect(() => {
         if (note) {
-            appwriteService.getAverageRating(note.$id).then((value)=>setRating(value.toFixed(1)));
+            appwriteService.getAverageRating(note.$id).then((value) => setRating(value.toFixed(1)));
         }
     }, [note]);
 
-    // useEffect(()=>{
-    //     if (slug){
-    //         appwriteService.getReviews(slug).then((value)=>{
-    //             if (reviews) setReviews(Array.from(value.documents))
-    //         });
-    //     }
-    // }, [submitReview])
+    useEffect(() => {
+        (async () => {
+            if (note) {
+                let result = await appwriteService.getTransactionInfo({
+                    noteId: note.$id,
+                    purchaseUserId: userData.$id
+                });
+                if (result) {
+                    setPaymentId(result.$id);
+                    setIsPaid(true);
+                }
+            }
+        })();
+    }, [note, paymentId])
 
 
 
-    
 
     const deleteNote = () => {
         appwriteService.deleteNote(note.$id).then((status) => {
@@ -151,7 +158,7 @@ export default function Note() {
         <div className="py-10">
             <Container>
                 <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
-                    
+
                     {/* Title and Author and Rating */}
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800 mb-1">{note.title}</h1>
@@ -193,18 +200,44 @@ export default function Note() {
                         />
                     </div>
 
+                    {note.pricing === "Paid" ? (
+                        isPaid ? (
+                            <div className="mt-4">
+                                <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-green-500">
+                                    ✅ Payment Status: Paid
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="mt-4 flex flex-col items-start gap-2">
+                                <button
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow"
+                                    onClick={() => createRazorpayOrder(note.price)}
+                                >
+                                    Pay ₹{note.price}
+                                </button>
+                                <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-red-400">
+                                    ❌ Payment Status: Not Paid
+                                </span>
+                            </div>
+                        )
+                    ) : null}
+
+
+
                     {/* Download Button */}
+
                     <div className="flex gap-4 flex-wrap">
-                        <Button
-                            onClick={() => {
-                                appwriteService.createTransactionInfo(ID.unique(), {noteId: note.$id, noteUserId: note.userId, purchaseUserId: userData.$id, amount: note.price })
-                                const fileUrl = appwriteService.downloadFile(note.pdfId);
-                                appwriteService.createDownloadInfo({noteId: note.$id, userId: userData.$id})
-                                window.open(fileUrl, "_blank");
-                            }}
-                        >
-                            Download PDF
-                        </Button>
+                        {isPaid &&
+                            <Button
+                                onClick={() => {
+                                    const fileUrl = appwriteService.downloadFile(note.pdfId);
+                                    appwriteService.createDownloadInfo({ noteId: note.$id, userId: userData.$id })
+                                    window.open(fileUrl, "_blank");
+                                }}
+                            >
+                                Download PDF
+                            </Button>
+                        }
 
                         {isAuthor && (
                             <>
@@ -218,41 +251,7 @@ export default function Note() {
                         )}
                     </div>
 
-                    <Reviews slug={slug} noteId={note.$id} userId={userData.$id} userName={userData.name}/>
-
-                    {/* <div>
-                        <form onSubmit={handleSubmit(submitReview)}>
-                            <div className="px-2">
-                                
-                                <TextArea label="Comment :"
-                                placeholder="Write your comment here..."
-                                rows={2}
-                                className="mb-4"
-                                {...register("comment", {required: true})}
-                                />
-
-                                <Input
-                                    label="Rating :"
-                                    placeholder="rating"
-                                    className="mb-4"
-                                    {...register("rating", { required: true })}
-                                />
-                                <Button type="submit" className="w-full">
-                                    {}Submit
-                                </Button>
-
-                            </div>
-                        </form>
-                        {reviews && (
-                            reviews.map((review)=>(
-                                <div key={review.$id}>
-                                    <div>{review.userName}</div>
-                                    <div>{review.comment}</div>
-                                    <div>{review.rating}</div>
-                                </div>
-                            ))
-                        )}
-                    </div> */}
+                    <Reviews slug={slug} noteId={note.$id} userId={userData.$id} userName={userData.name} hasPaid={isPaid} />
 
 
                 </div>
@@ -261,4 +260,3 @@ export default function Note() {
     ) : null;
 }
 
-// 7->2nd, 8->2nd, 9->Full, 11->Full, 12->Full, 13->Full
