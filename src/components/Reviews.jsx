@@ -4,7 +4,7 @@ import appwriteService from '../appwrite/config';
 import { useForm } from 'react-hook-form';
 import { FaStar, FaEdit, FaTrash } from 'react-icons/fa';
 
-function Reviews({ slug, noteId, userId, userName, hasPaid }) {
+function Reviews({ slug, noteId, noteUserId, userId, userName, hasDownloaded }) {
     const { register, handleSubmit, reset, setValue } = useForm();
     const [reviews, setReviews] = useState([]);
     const [userReview, setUserReview] = useState(null);
@@ -29,7 +29,7 @@ function Reviews({ slug, noteId, userId, userName, hasPaid }) {
     // Submit or update review
     const submitReview = async (data) => {
         if (rating === 0) return alert('Please select a rating');
-        if (!hasPaid) return alert('Only paid users can review');
+        if (!hasDownloaded) return alert('Only paid users can review');
 
         if (editing && userReview) {
             await appwriteService.updateReview(userReview.$id, {
@@ -75,11 +75,15 @@ function Reviews({ slug, noteId, userId, userName, hasPaid }) {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Reviews</h2>
 
             {/* User Review or Review Form */}
-            {!hasPaid ? (
+
+            {(!hasDownloaded || noteUserId==userId) ? (
                 <div className="text-red-500 font-medium mb-6">
-                    You need to purchase this note to submit a review.
+                    {/* You need to purchase this note to submit a review. */}
+                    {noteUserId==userId? "You cannot review your own note": (!hasDownloaded) ? "You need to download this note to submit a review" : null}
                 </div>
-            ) : userReview && !editing ? (
+            ) : null} 
+
+            { hasDownloaded && userReview && !editing ? (
                 <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-300 mb-6">
                     <div className="flex justify-between items-start">
                         <div>
@@ -113,7 +117,9 @@ function Reviews({ slug, noteId, userId, userName, hasPaid }) {
                         </div>
                     </div>
                 </div>
-            ) : (
+            ) : null}
+            
+            {hasDownloaded && noteUserId !== userId && (!userReview || editing) ?(
                 <form onSubmit={handleSubmit(submitReview)} className="bg-gray-50 p-4 rounded-lg shadow-md space-y-4 mb-6">
                     <TextArea
                         label="Comment"
@@ -142,7 +148,7 @@ function Reviews({ slug, noteId, userId, userName, hasPaid }) {
                         {editing ? "Update Review" : "Submit Review"}
                     </Button>
                 </form>
-            )}
+            ): null}
 
             {/* All Other Reviews */}
             <div className="max-h-64 overflow-y-auto space-y-4 pr-2">

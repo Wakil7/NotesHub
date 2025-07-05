@@ -15,6 +15,8 @@ import TextArea from './TextArea'
 import Reviews from './Reviews'
 import NoteInfo from './NoteInfo'
 import PurchaseInfo from './PurchaseInfo'
+import StatsCard from './StatsCard'
+import StatsInfo from './StatsInfo'
 
 
-export {Header, Footer, Container, Logo, LogoutBtn, Signup, Login, NoteForm, AuthLayout, Button, Input, NoteCard, Select, TextArea, Reviews, NoteInfo, PurchaseInfo}
+export {Header, Footer, Container, Logo, LogoutBtn, Signup, Login, NoteForm, AuthLayout, Button, Input, NoteCard, Select, TextArea, Reviews, NoteInfo, PurchaseInfo, StatsCard, StatsInfo}

@@ -17,9 +17,10 @@ export default function Note() {
 
     const [rating, setRating] = useState(0);
 
-    const [responseState, setResponseState] = useState([]);
+    // const [responseState, setResponseState] = useState([]);
     const [paymentId, setPaymentId] = useState(null);
     const [isPaid, setIsPaid] = useState(false);
+    const [isDownloaded, setIsDownloaded] = useState(false);
 
     const loadScript = (src) => {
         return new Promise((resolve) => {
@@ -102,7 +103,7 @@ export default function Note() {
         axios.get(`http://localhost:5000/payment/${paymentId}`)
             .then((response) => {
                 console.log("✅ Payment fetched:", response.data);
-                setResponseState(response.data);
+                // setResponseState(response.data);
             })
             .catch((error) => {
                 console.error("❌ Payment fetch failed:", error);
@@ -137,6 +138,8 @@ export default function Note() {
                     setPaymentId(result.$id);
                     setIsPaid(true);
                 }
+                let downloadCheck = await appwriteService.hasUserDownloadedNote({ noteId: note.$id, userId: userData.$id });
+                setIsDownloaded(downloadCheck);
             }
         })();
     }, [note, paymentId])
@@ -201,11 +204,13 @@ export default function Note() {
                     </div>
 
                     {note.pricing === "Paid" ? (
-                        isPaid ? (
+                        (isPaid || note.$id == userData.$id) ? (
                             <div className="mt-4">
-                                <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-green-500">
-                                    ✅ Payment Status: Paid
-                                </span>
+                                {note.$id != userData.$id ? (
+                                    <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-green-500">
+                                        ✅ Payment Status: Paid
+                                    </span>) : null
+                                }
                             </div>
                         ) : (
                             <div className="mt-4 flex flex-col items-start gap-2">
@@ -220,7 +225,7 @@ export default function Note() {
                                 </span>
                             </div>
                         )
-                    ) : null}
+                        ) : null}
 
 
 
@@ -230,6 +235,7 @@ export default function Note() {
                         {isPaid &&
                             <Button
                                 onClick={() => {
+                                    setIsDownloaded(true);
                                     const fileUrl = appwriteService.downloadFile(note.pdfId);
                                     appwriteService.createDownloadInfo({ noteId: note.$id, userId: userData.$id })
                                     window.open(fileUrl, "_blank");
@@ -251,7 +257,7 @@ export default function Note() {
                         )}
                     </div>
 
-                    <Reviews slug={slug} noteId={note.$id} userId={userData.$id} userName={userData.name} hasPaid={isPaid} />
+                    <Reviews slug={slug} noteId={note.$id} noteUserId={note.userId} userId={userData.$id} userName={userData.name} hasDownloaded={isDownloaded} />
 
 
                 </div>
