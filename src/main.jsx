@@ -55,33 +55,33 @@ const router = createBrowserRouter([
                 </AuthLayout>
             ),
         },
-        {
-            path: "/all-notes",
-            element: (
-                <AuthLayout authentication>
-                    {" "}
-                    <AllNotes />
-                </AuthLayout>
-            ),
-        },
-        {
-            path: "/add-note",
-            element: (
-                <AuthLayout authentication>
-                    {" "}
-                    <AddNote />
-                </AuthLayout>
-            ),
-        },
-        {
-            path: "/my-notes",
-            element: (
-                <AuthLayout authentication>
-                    {" "}
-                    <MyNotes />
-                </AuthLayout>
-            )
-        },
+        // {
+        //     path: "/all-notes",
+        //     element: (
+        //         <AuthLayout authentication>
+        //             {" "}
+        //             <AllNotes />
+        //         </AuthLayout>
+        //     ),
+        // },
+        // {
+        //     path: "/add-note",
+        //     element: (
+        //         <AuthLayout authentication>
+        //             {" "}
+        //             <AddNote />
+        //         </AuthLayout>
+        //     ),
+        // },
+        // {
+        //     path: "/my-notes",
+        //     element: (
+        //         <AuthLayout authentication>
+        //             {" "}
+        //             <MyNotes />
+        //         </AuthLayout>
+        //     )
+        // },
         // {
         //     path: "/my-downloads",
         //     element: (

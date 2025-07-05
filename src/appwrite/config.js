@@ -1,12 +1,12 @@
 import conf from "../conf/conf";
-import {Client, ID, Databases, Storage, Query} from "appwrite";
+import { Client, ID, Databases, Storage, Query } from "appwrite";
 
-export class Service{
+export class Service {
     client = new Client();
     databases;
     bucket;
 
-    constructor(){
+    constructor() {
         this.client.setEndpoint(conf.appwriteUrl).setProject(conf.appwriteProjectId);
         this.databases = new Databases(this.client);
         this.bucket = new Storage(this.client);
@@ -15,11 +15,11 @@ export class Service{
 
     // Notes Service
 
-    async createNote({title, description, coverImageId, pdfId, pricing, price, userId, keywords, userName}){
-        try{
+    async createNote({ title, description, coverImageId, pdfId, pricing, price, userId, keywords, userName }) {
+        try {
             return await this.databases.createDocument(
-                conf.appwriteDatabaseId, 
-                conf.appwriteNotesCollectionId, 
+                conf.appwriteDatabaseId,
+                conf.appwriteNotesCollectionId,
                 ID.unique(),
                 {
                     title,
@@ -35,13 +35,13 @@ export class Service{
 
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: createPost :: error", error);
         }
     }
 
-    async updateNote(slug, {title, description, coverImageId, pdfId, pricing, price, keywords, userName}){
-        try{
+    async updateNote(slug, { title, description, coverImageId, pdfId, pricing, price, keywords, userName }) {
+        try {
             return await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteNotesCollectionId,
@@ -58,13 +58,13 @@ export class Service{
                 }
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: updatePost :: error", error);
         }
     }
 
-    async deleteNote(slug){
-        try{
+    async deleteNote(slug) {
+        try {
             await this.databases.deleteDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteNotesCollectionId,
@@ -72,34 +72,34 @@ export class Service{
             )
             return true;
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: deletePost :: error", error);
             return false;
         }
     }
 
-    async getNote(slug){
-        try{
+    async getNote(slug) {
+        try {
             return await this.databases.getDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteNotesCollectionId,
                 slug
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: getPost :: error", error);
             return false;
         }
     }
 
-    async getAllNotes(){
-        try{
+    async getAllNotes() {
+        try {
             return this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteNotesCollectionId,
             );
         }
-        catch(error){
+        catch (error) {
             console.log(error);
         }
     }
@@ -150,8 +150,8 @@ export class Service{
 
     }
 
-    async getNotesByUser(userId){
-        try{
+    async getNotesByUser(userId) {
+        try {
             const query = [Query.equal("userId", userId)]
             return this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -159,7 +159,7 @@ export class Service{
                 query
             )
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return null;
         }
@@ -167,7 +167,7 @@ export class Service{
 
     // async getNotesByIds(noteIds){
     //     try{
-            
+
     //     }
     //     catch(error){
     //         console.log(error)
@@ -177,28 +177,29 @@ export class Service{
 
     // Downloads service
 
-    async createDownloadInfo({noteId, userId}){
-        try{
+    async createDownloadInfo({ noteId, noteUserId, purchaseUserId }) {
+        try {
             // let isDownloaded = await hasUserDownloadedNote({userId, noteId});
             // if (isDownloaded) return;
             return await this.databases.createDocument(
-                conf.appwriteDatabaseId, 
-                conf.appwriteDownloadsCollectionId, 
+                conf.appwriteDatabaseId,
+                conf.appwriteDownloadsCollectionId,
                 ID.unique(),
                 {
                     noteId,
-                    userId
+                    noteUserId,
+                    purchaseUserId
                 }
 
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: createPost :: error", error);
         }
     }
 
-    async getTotalDownloadsCount(noteId){
-        try{
+    async getTotalDownloadsCount(noteId) {
+        try {
             const query = [Query.equal("noteId", noteId)]
             let res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -207,38 +208,38 @@ export class Service{
             )
             return res.documents.length;
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return 0;
         }
-        
+
     }
 
-    async hasUserDownloadedNote({noteId, userId}){
-        try{
-            const queries = [Query.equal("userId", userId), Query.equal("noteId", noteId)]
+    async hasUserDownloadedNote({ noteId, purchaseUserId }) {
+        try {
+            const queries = [Query.equal("purchaseUserId", purchaseUserId), Query.equal("noteId", noteId)]
             let res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteDownloadsCollectionId,
                 queries
             )
-            return res.documents.length>0;
+            return res.documents.length > 0;
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return false;
         }
     }
 
-    async getUserDownloadedNotes(userId){
-        try{
-            const query1 = [Query.equal("userId", userId)]
+    async getUserDownloadedNotes(purchaseUserId) {
+        try {
+            const query1 = [Query.equal("purchaseUserId", purchaseUserId)]
             const res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteDownloadsCollectionId,
                 query1
             )
-            let noteIds = Array.from(res.documents).map((infoObj)=>{
+            let noteIds = Array.from(res.documents).map((infoObj) => {
                 return infoObj.noteId;
             })
             const query2 = [Query.equal("$id", noteIds)]
@@ -247,21 +248,41 @@ export class Service{
                 conf.appwriteNotesCollectionId,
                 query2
             )
-            
+
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return null;
         }
     }
 
+    async getDownloadsByDateRange({noteUserId, start, end}) {
+        let queries  = [
+                Query.equal("noteUserId", noteUserId),
+                Query.greaterThan('$createdAt', start),
+                Query.lessThan('$createdAt', end)
+            ]
+
+        try {
+            const response = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteDownloadsCollectionId,
+                queries
+                );
+            return response.total;
+        } catch (error) {
+            console.error('Failed to fetch today\'s downloads:', error);
+            return 0;
+        }
+    }
+
     // Reviews service
 
-    async createReview({noteId, userId, userName, rating, comment}){
-        try{
+    async createReview({ noteId, userId, userName, rating, comment }) {
+        try {
             return await this.databases.createDocument(
-                conf.appwriteDatabaseId, 
-                conf.appwriteReviewsCollectionId, 
+                conf.appwriteDatabaseId,
+                conf.appwriteReviewsCollectionId,
                 ID.unique(),
                 {
                     noteId,
@@ -273,13 +294,13 @@ export class Service{
 
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: createPost :: error", error);
         }
     }
 
-    async updateReview(reviewId, {noteId, userId, userName, rating, comment}){
-        try{
+    async updateReview(reviewId, { noteId, userId, userName, rating, comment }) {
+        try {
             return await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteReviewsCollectionId,
@@ -293,13 +314,13 @@ export class Service{
                 }
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: updatePost :: error", error);
         }
     }
 
-    async deleteReview(reviewId){
-        try{
+    async deleteReview(reviewId) {
+        try {
             await this.databases.deleteDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteReviewsCollectionId,
@@ -307,14 +328,14 @@ export class Service{
             )
             return true;
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: deletePost :: error", error);
             return false;
         }
     }
 
-    async getAverageRating(noteId){
-        try{
+    async getAverageRating(noteId) {
+        try {
             const query = [Query.equal("noteId", noteId)]
             let res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -322,19 +343,19 @@ export class Service{
                 query
             )
             let rating = 0;
-            Array.from(res.documents).forEach((obj)=>rating += obj.rating)
-            return rating/res.documents.length;
-            
+            Array.from(res.documents).forEach((obj) => rating += obj.rating)
+            return rating / res.documents.length;
+
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return 0;
         }
     }
 
 
-    async getReviews(noteId){
-        try{
+    async getReviews(noteId) {
+        try {
             const query = [Query.equal("noteId", noteId)]
             return this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -342,19 +363,35 @@ export class Service{
                 query
             )
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return null;
         }
     }
 
+    async getTotalReviews(noteId) {
+        try {
+            const query = [Query.equal("noteId", noteId)]
+            let result = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteReviewsCollectionId,
+                query
+            )
+            return result.documents.length;
+        }
+        catch (error) {
+            console.log(error)
+            return 0;
+        }
+    }
+
     // Transaction Service
 
-    async createTransactionInfo(transactionId, {noteId, noteUserId, purchaseUserId, amount}){
-        try{
+    async createTransactionInfo(transactionId, { noteId, noteUserId, purchaseUserId, amount }) {
+        try {
             return await this.databases.createDocument(
-                conf.appwriteDatabaseId, 
-                conf.appwriteTransactionsCollectionId, 
+                conf.appwriteDatabaseId,
+                conf.appwriteTransactionsCollectionId,
                 transactionId,
                 {
                     noteId,
@@ -364,13 +401,13 @@ export class Service{
                 }
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: createPost :: error", error);
         }
     }
 
-    async getTransactionInfo({noteId, purchaseUserId}){
-        try{
+    async getTransactionInfo({ noteId, purchaseUserId }) {
+        try {
             const queries = [Query.equal("purchaseUserId", purchaseUserId), Query.equal("noteId", noteId)]
             let res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -379,14 +416,14 @@ export class Service{
             )
             return Array.from(res.documents)[0];
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return null;
         }
     }
 
-    async getPaymentTransactionInfo(noteUserId){
-        try{
+    async getPaymentTransactionInfo(noteUserId) {
+        try {
             const query = [Query.equal("noteUserId", noteUserId)]
             let res = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -395,9 +432,51 @@ export class Service{
             )
             return res.documents;
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             return null;
+        }
+    }
+
+    async getTotalTransactionsCount(noteId) {
+        try {
+            const query = [Query.equal("noteId", noteId)]
+            let res = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteTransactionsCollectionId,
+                query
+            );
+            console.log(res.documents)
+            console.log(res.documents.length);
+            return res.documents.length;
+        }
+        catch (error) {
+            console.log(error)
+            return 0;
+        }
+    }
+
+    async getEarningsByDateRange({noteUserId, start, end}){
+        let queries  = [
+                Query.equal("noteUserId", noteUserId),
+                Query.greaterThan('$createdAt', start),
+                Query.lessThan('$createdAt', end)
+            ]
+
+        try {
+            const response = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteTransactionsCollectionId,
+                queries
+                );
+            let totalEarnings = 0;
+            response.documents.forEach((val)=>{
+                totalEarnings += val.amount;
+            })
+            return totalEarnings;
+        } catch (error) {
+            console.error('Failed to fetch today\'s downloads:', error);
+            return 0;
         }
     }
 
@@ -406,49 +485,49 @@ export class Service{
 
     // File service
 
-    async uploadFile(file){
-        try{
+    async uploadFile(file) {
+        try {
             return await this.bucket.createFile(
                 conf.appwriteBucketId,
                 ID.unique(),
                 file
             )
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: uploadFile :: error", error);
             return false;
         }
     }
 
-    async deleteFile(fileId){
-        try{
+    async deleteFile(fileId) {
+        try {
             await this.bucket.deleteFile(
                 conf.appwriteBucketId,
                 fileId
             )
             return true;
         }
-        catch(error){
+        catch (error) {
             console.log("Appwrite service :: deleteFile :: error", error);
             return false;
         }
     }
 
-    getFileView(fileId){
+    getFileView(fileId) {
         return this.bucket.getFileView(
             conf.appwriteBucketId,
             fileId
         );
     }
 
-    downloadFile(fileId){
+    downloadFile(fileId) {
         return this.bucket.getFileDownload(
             conf.appwriteBucketId,
             fileId
         );
     }
 
-    
+
 
 }
 

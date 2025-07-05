@@ -25,26 +25,26 @@ function Header(){
             slug: "/signup",
             active: !authStatus
         },
-        {
-            name: "All Notes",
-            slug: "/all-notes",
-            active: authStatus
-        },
-        {
-            name: "Add Note",
-            slug: "/add-note",
-            active: authStatus
-        },
-        {
-            name: "My Notes",
-            slug: "/my-notes",
-            active: authStatus
-        },
-        {
-            name: "Downloads",
-            slug: "/downloads",
-            active: authStatus
-        },
+        // {
+        //     name: "All Notes",
+        //     slug: "/all-notes",
+        //     active: authStatus
+        // },
+        // {
+        //     name: "Add Note",
+        //     slug: "/add-note",
+        //     active: authStatus
+        // },
+        // {
+        //     name: "My Notes",
+        //     slug: "/my-notes",
+        //     active: authStatus
+        // },
+        // {
+        //     name: "Downloads",
+        //     slug: "/downloads",
+        //     active: authStatus
+        // },
         {
             name: "Dashboard",
             slug: "/dashboard",

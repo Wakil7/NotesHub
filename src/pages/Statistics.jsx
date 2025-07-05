@@ -1,75 +1,83 @@
-import React from 'react';
-import { StatsCard, StatsInfo } from '../components/index'; 
+import React, { useState, useEffect } from 'react';
+import { StatsCard, StatsInfo } from '../components/index';
+import appwriteService from '../appwrite/config'
+import { useSelector } from 'react-redux'
 
 function Statistics() {
 
+    const [todayDownloads, setTodayDownloads] = useState(0);
+    const [monthlyDownloads, setMonthlyDownloads] = useState(0);
+    const [todayEarnings, setTodayEarnings] = useState(0);
+    const [monthlyEarnings, setMonthlyEarnings] = useState(0);
+    const [notes, setNotes] = useState(null);
+    const userData = useSelector((state) => state.auth.userData);
+
+    useEffect(() => {
+
+        const now = new Date();
+
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+
+        appwriteService.getDownloadsByDateRange({ noteUserId: userData.$id, start: startOfToday, end: endOfToday }).then(setTodayDownloads);
+
+        appwriteService.getDownloadsByDateRange({ noteUserId: userData.$id, start: startOfMonth, end: endOfMonth }).then(setMonthlyDownloads);
+
+        appwriteService.getEarningsByDateRange({ noteUserId: userData.$id, start: startOfToday, end: endOfToday }).then(setTodayEarnings);
+
+        appwriteService.getEarningsByDateRange({ noteUserId: userData.$id, start: startOfMonth, end: endOfMonth }).then(setMonthlyEarnings);
+
+        appwriteService.getNotesByUser(userData.$id).then(response => setNotes(response.documents))
+
+    }, [])
+
+
     const stats = [
         {
-            title: 'Today\'s Downloads',
-            value: 12,
+            title: 'Downloads Today',
+            value: todayDownloads
         },
         {
-            title: 'Today\'s Earnings',
-            value: `₹450`,
+            title: 'Earnings Today',
+            value: todayEarnings,
         },
         {
-            title: 'This Month\'s Downloads',
-            value: 138,
+            title: 'Monthly Downloads',
+            value: monthlyDownloads,
         },
         {
-            title: 'This Month\'s Earnings',
-            value: `₹6,120`,
+            title: 'Monthly Earnings',
+            value: monthlyEarnings,
         },
     ];
 
-    const sampleNotes = [
-        {
-            $id: 'note1',
-            title: 'Operating Systems Notes',
-            coverImageId: 'cover_os123',
-            pricing: 'Paid',
-            price: 99,
-            uploadDate: '2024-11-01T10:00:00Z',
-            updateDate: '2025-07-01T14:30:00Z',
-            totalReviews: 8,
-            totalEarnings: 792,
-        },
-        {
-            $id: 'note2',
-            title: 'DBMS Full Guide',
-            coverImageId: 'cover_db456',
-            pricing: 'Free',
-            price: 0,
-            uploadDate: '2024-12-10T09:30:00Z',
-            updateDate: '2025-06-28T12:45:00Z',
-            totalReviews: 12,
-            totalEarnings: 0,
-        },
-        {
-            $id: 'note3',
-            title: 'Computer Networks Essentials',
-            coverImageId: 'cover_cn789',
-            pricing: 'Paid',
-            price: 79,
-            uploadDate: '2025-01-15T11:45:00Z',
-            updateDate: '2025-07-03T16:20:00Z',
-            totalReviews: 5,
-            totalEarnings: 395,
-        },
-    ];
 
     return (
         <div className="p-4 sm:p-8">
-            <h1 className="text-3xl font-bold mb-6">Your Statistics</h1>
+            <h1 className="text-3xl font-bold mb-6">Statistics</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, index) => (
                     <StatsCard key={index} title={stat.title} value={stat.value} />
                 ))}
             </div>
-            <div className="space-y-4">
-                {sampleNotes.map((note) => (
-                    <StatsInfo key={note.$id} {...note} />
-                ))}
+            <div className='p-4'>
+                {notes && <div className="space-y-4">
+                    {notes.map((note) => (
+                        <StatsInfo
+                            key={note.$id}
+                            $id={note.$id}
+                            title={note.title}
+                            coverImageId={note.coverImageId}
+                            pricing={note.pricing}
+                            price={note.price}
+                            uploadDate={note.$createdAt}
+                            updateDate={note.$updatedAt}
+                        />
+                    ))}
+                </div>}
             </div>
         </div>
     );

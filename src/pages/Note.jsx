@@ -138,7 +138,7 @@ export default function Note() {
                     setPaymentId(result.$id);
                     setIsPaid(true);
                 }
-                let downloadCheck = await appwriteService.hasUserDownloadedNote({ noteId: note.$id, userId: userData.$id });
+                let downloadCheck = await appwriteService.hasUserDownloadedNote({ noteId: note.$id, purchaseUserId: userData.$id });
                 setIsDownloaded(downloadCheck);
             }
         })();
@@ -204,9 +204,9 @@ export default function Note() {
                     </div>
 
                     {note.pricing === "Paid" ? (
-                        (isPaid || note.$id == userData.$id) ? (
+                        (isPaid || note.userId == userData.$id) ? (
                             <div className="mt-4">
-                                {note.$id != userData.$id ? (
+                                {note.userId != userData.$id ? (
                                     <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-green-500">
                                         ✅ Payment Status: Paid
                                     </span>) : null
@@ -237,7 +237,7 @@ export default function Note() {
                                 onClick={() => {
                                     setIsDownloaded(true);
                                     const fileUrl = appwriteService.downloadFile(note.pdfId);
-                                    appwriteService.createDownloadInfo({ noteId: note.$id, userId: userData.$id })
+                                    appwriteService.createDownloadInfo({ noteId: note.$id, noteUserId: note.userId, purchaseUserId: userData.$id })
                                     window.open(fileUrl, "_blank");
                                 }}
                             >

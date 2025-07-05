@@ -1,19 +1,4 @@
-// import { useState } from 'react'
-// import NoteForm from './components/note-form/NoteForm'
 
-// // import './App.css'
-
-// function App() {
-
-//   return (
-//     <>
-//     <h1 className="text-5xl text-red-500">Notes Hub</h1>
-//     <NoteForm post={null}/>
-//     </>
-//   )
-// }
-
-// export default App
 
 import { useState, useEffect } from 'react'
 import { useDispatch } from "react-redux"

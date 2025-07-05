@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Star, Download } from 'lucide-react';
+import { Star } from 'lucide-react';
 import appwriteService from '../appwrite/config';
 
 export default function StatsInfo({
@@ -10,17 +10,23 @@ export default function StatsInfo({
     price,
     uploadDate,
     updateDate,
-    totalReviews = 0,
-    totalEarnings = 0,
 }) {
     const [downloads, setDownloads] = useState(0);
     const [rating, setRating] = useState(0);
+    const [totalReviews, setTotalReviews] = useState(0);
+    const [totalEarnings, setTotalEarnings] = useState(0);
+    const [totalTransactions, setTotalTransactions] = useState(0);
 
     useEffect(() => {
         appwriteService.getTotalDownloadsCount($id).then(setDownloads);
         appwriteService.getAverageRating($id).then((val) =>
             setRating(parseFloat(val).toFixed(1))
         );
+        appwriteService.getTotalReviews($id).then(setTotalReviews);
+        appwriteService.getTotalTransactionsCount($id).then((transactions)=>{
+            setTotalTransactions(transactions);
+            setTotalEarnings(transactions*price);
+        });
     }, [$id]);
 
     return (
@@ -65,9 +71,8 @@ export default function StatsInfo({
                         {totalReviews}
                     </p>
                     <p className="flex items-center gap-1">
-                        <Download size={16} />{' '}
-                        <span className="font-medium text-gray-800">Total Downloads:</span>{' '}
-                        {downloads}
+                        <span className="font-medium text-gray-800">{pricing==='Free'?"Total Downloads:":"Total Transactions:"}</span>{' '}
+                        {pricing==='Free'?downloads:totalTransactions}
                     </p>
                     <p>
                         <span className="font-medium text-gray-800">Total Earnings:</span>{' '}
