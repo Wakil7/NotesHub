@@ -34,6 +34,43 @@
 //   )
 // }
 
+// import {
+//   FilePlus,
+//   UploadCloud,
+//   Receipt,
+//   BarChart2,
+//   CreditCard,
+// } from 'lucide-react';
+
+// export default function Sidebar({ onSelectPage }) {
+//   const navItems = [
+//     { id: 'add-note', label: 'Add Note', icon: <FilePlus size={20} /> },
+//     { id: 'my-uploads', label: 'My Uploads', icon: <UploadCloud size={20} /> },
+//     { id: 'purchase-history', label: 'Purchase History', icon: <Receipt size={20} /> },
+//     { id: 'statistics', label: 'Statistics', icon: <BarChart2 size={20} /> },
+//     { id: 'payments', label: 'Payments', icon: <CreditCard size={20} /> },
+//   ];
+
+//   return (
+//     <div className="w-64 h-screen bg-white shadow-lg p-4 flex flex-col gap-4">
+//       <h2 className="text-2xl font-bold text-gray-800 mb-6">NotesHub</h2>
+//       <nav className="flex flex-col gap-2">
+//         {navItems.map((item) => (
+//           <button
+//             key={item.id}
+//             onClick={() => onSelectPage(item.id)}
+//             className="flex items-center gap-3 text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+//           >
+//             {item.icon}
+//             <span className="text-sm font-medium">{item.label}</span>
+//           </button>
+//         ))}
+//       </nav>
+//     </div>
+//   );
+// }
+
+
 import {
   FilePlus,
   UploadCloud,
@@ -41,8 +78,9 @@ import {
   BarChart2,
   CreditCard,
 } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
-export default function Sidebar({ onSelectPage }) {
+export default function Sidebar() {
   const navItems = [
     { id: 'add-note', label: 'Add Note', icon: <FilePlus size={20} /> },
     { id: 'my-uploads', label: 'My Uploads', icon: <UploadCloud size={20} /> },
@@ -56,16 +94,23 @@ export default function Sidebar({ onSelectPage }) {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">NotesHub</h2>
       <nav className="flex flex-col gap-2">
         {navItems.map((item) => (
-          <button
+          <NavLink
             key={item.id}
-            onClick={() => onSelectPage(item.id)}
-            className="flex items-center gap-3 text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+            to={`/dashboard/${item.id}`}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                isActive
+                  ? 'bg-gray-200 text-black font-semibold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`
+            }
           >
             {item.icon}
-            <span className="text-sm font-medium">{item.label}</span>
-          </button>
+            <span>{item.label}</span>
+          </NavLink>
         ))}
       </nav>
     </div>
   );
 }
+

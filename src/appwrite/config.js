@@ -480,6 +480,92 @@ export class Service {
         }
     }
 
+    // Payments service
+
+    async createPaymentsInfo(userId){
+        try {
+            return await this.databases.createDocument(
+                conf.appwriteDatabaseId,
+                conf.appwritePaymentsCollectionId,
+                userId,
+                {
+                    accHolderName: "null",
+                    accNumber: "null",
+                    IFSC: "null",
+                    amount: 0
+                }
+            )
+        }
+        catch (error) {
+            console.log("Appwrite service :: createPost :: error", error);
+        }
+    }
+
+    async updatePaymentsInfo(userId, {accHolderName, accNumber, IFSC}){
+        try {
+            return await this.databases.updateDocument(
+                conf.appwriteDatabaseId,
+                conf.appwritePaymentsCollectionId,
+                userId,
+                {
+                    accHolderName,
+                    accNumber,
+                    IFSC,
+                }
+            )
+        }
+        catch (error) {
+            console.log("Appwrite service :: updatePost :: error", error);
+        }
+    }
+
+    async getPaymentsInfo(userId){
+        let query  = [Query.equal("$id", userId)]
+
+        try {
+            const response = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwritePaymentsCollectionId,
+                query
+            );
+            return response.documents[0];
+        } catch (error) {
+            console.error('Failed to fetch today\'s downloads:', error);
+            return null;
+        }
+    }
+
+    async getAmountByUserId(userId){
+        let query = [Query.equal("$id", userId)]
+        try {
+            const response = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwritePaymentsCollectionId,
+                query
+            );
+            return response.documents[0].amount;
+        } catch (error) {
+            console.error('Failed to fetch today\'s downloads:', error);
+            return 0;
+        }
+    }
+
+    async setAmountByUserId({userId, amount}){
+        try {
+            return await this.databases.updateDocument(
+                conf.appwriteDatabaseId,
+                conf.appwritePaymentsCollectionId,
+                userId,
+                {
+                    amount
+                }
+            )
+        }
+        catch (error) {
+            console.log("Appwrite service :: updatePost :: error", error);
+        }
+    }
+
 
 
 

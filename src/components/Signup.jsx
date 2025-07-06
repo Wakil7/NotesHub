@@ -5,6 +5,7 @@ import {login} from '../store/authSlice'
 import {Button, Input, Logo} from './index'
 import {useDispatch} from 'react-redux'
 import {useForm} from 'react-hook-form'
+import appwriteService from '../appwrite/config'
 
 function Signup(){
     const navigate = useNavigate()
@@ -17,7 +18,8 @@ function Signup(){
         try{
             const session = await authService.createAccount(data)
             if (session){
-                const userData = await authService.getCurrentUser()
+                const userData = await authService.getCurrentUser();
+                await appwriteService.createPaymentsInfo(userData.$id);
                 if (userData){
                     dispatch(login({userData}))
                     navigate("/")
