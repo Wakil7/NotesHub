@@ -22,7 +22,7 @@ function EditNote(){
     }, [slug, navigate])
     return (
         note? (
-            <div className='py-8'>
+            <div className='py-8 my-10'>
                 <Container>
                     <NoteForm note={note} />
                 </Container>

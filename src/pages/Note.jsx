@@ -72,14 +72,17 @@ export default function Note() {
             name: "Note Name",
             description: "Payment for note",
             order_id: orderData.order_id,
-            handler: function (response) {
+            handler: async function (response) {
                 console.log("✅ Payment success:", response);
                 appwriteService.createTransactionInfo(response.razorpay_payment_id, {
                     noteId: note.$id,
                     noteUserId: note.userId,
                     purchaseUserId: userData.$id,
                     amount: note.price
-                })
+                });
+                let currAmount = await appwriteService.getAmountByUserId(note.userId);
+                currAmount += note.price;
+                appwriteService.setAmountByUserId({ userId: note.userId, amount: currAmount });
                 setPaymentId(response.razorpay_payment_id);
                 setIsPaid(true);
             },
@@ -157,8 +160,10 @@ export default function Note() {
         });
     };
 
+
+
     return note ? (
-        <div className="py-10">
+        <div className="py-10 my-10">
             <Container>
                 <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
 
@@ -225,29 +230,33 @@ export default function Note() {
                                 </span>
                             </div>
                         )
-                        ) : null}
+                    ) : null}
 
 
 
                     {/* Download Button */}
 
                     <div className="flex gap-4 flex-wrap">
-                        {isPaid &&
+                        {(isPaid || note.pricing === "Free" || note.userId === userData.$id) && (
                             <Button
                                 onClick={() => {
                                     setIsDownloaded(true);
                                     const fileUrl = appwriteService.downloadFile(note.pdfId);
-                                    appwriteService.createDownloadInfo({ noteId: note.$id, noteUserId: note.userId, purchaseUserId: userData.$id })
+                                    appwriteService.createDownloadInfo({
+                                        noteId: note.$id,
+                                        noteUserId: note.userId,
+                                        purchaseUserId: userData.$id
+                                    });
                                     window.open(fileUrl, "_blank");
                                 }}
                             >
                                 Download PDF
                             </Button>
-                        }
+                        )}
 
                         {isAuthor && (
                             <>
-                                <Link to={`/edit-note/${note.$id}`}>
+                                <Link to={`/dashboard/edit-note/${note.$id}`}>
                                     <Button bgColor="bg-yellow-500">Edit</Button>
                                 </Link>
                                 <Button bgColor="bg-red-500" onClick={deleteNote}>

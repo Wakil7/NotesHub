@@ -123,7 +123,7 @@
 //     <Provider store = {store}>
 //       <RouterProvider router={router}/>
 //     </Provider>
-    
+
 //   </StrictMode>
 // )
 
@@ -197,6 +197,10 @@ const router = createBrowserRouter([
           {
             path: 'add-note',
             element: <AddNote />,
+          },
+          {
+            path: 'edit-note/:slug',
+            element: <EditNote />, // ✅ this is your new edit route
           },
           {
             path: 'my-uploads',

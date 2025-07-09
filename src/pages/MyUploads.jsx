@@ -16,7 +16,7 @@ function MyUploads(){
         })
     }, [])
     return (
-        <div className='w-full py-8'>
+        <div className='w-full py-8 my-10'>
             <Container>
                 <div className='flex flex-wrap'>
                     {notes.map((note)=>(

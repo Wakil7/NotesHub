@@ -33,8 +33,8 @@
 
 //     const navigate = useNavigate()
 //     const userData = useSelector(state => state.auth.userData)
-    
-    
+
+
 //     const submit = async(data)=>{
 //         data.price = (data.pricing==="Paid")? Number.parseInt(data.price): 0;
 //         if (data.pricing==="Paid" && data.price<=0){
@@ -101,7 +101,7 @@
 //                     className="mb-4"
 //                     {...register("title", { required: true })}
 //                 />
-                
+
 //                 <TextArea label="Description :"
 //                 placeholder="Write your note description here..."
 //                 rows={5}
@@ -160,7 +160,7 @@
 //                  <Button type="submit" bgColor={note ? "bg-green-500" : undefined} className="w-full">
 //                     {note ? "Update" : "Submit"}
 //                 </Button>
-                
+
 //             </div>
 //             {/* <div className="w-1/3 px-2">
 //                 { <Input
@@ -299,8 +299,9 @@ function NoteForm({ note }) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-400 py-8">
-            <form onSubmit={handleSubmit(submit)} className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+        <div className="w-full h-full bg-gray-400 py-8 px-4">
+            <form onSubmit={handleSubmit(submit)} className="w-full max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+
                 <Input
                     label="Title:"
                     placeholder="Title"
@@ -391,7 +392,7 @@ function NoteForm({ note }) {
                     {note ? "Update" : "Submit"}
                 </Button>
             </form>
-        </div>
+        </div >
     );
 }
 
